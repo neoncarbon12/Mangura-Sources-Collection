@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Import the community source collection into Mangura using one URL. Follow the quick setup instructions to add and update sources in the app.">
+  <meta name="robots" content="index, nofollow">
+  <meta name="theme-color" content="#17131f">
+  <title>Mangura Sources Collection</title>
+  <link rel="canonical" href="https://neoncarbon12.github.io/Mangura-Sources-Collection/">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <nav aria-label="Primary navigation">
+      <a class="brand" href="./" aria-label="Mangura Sources home">
+        <span class="brand-mark" aria-hidden="true">M</span>
+        <span>Mangura Sources</span>
+      </a>
+      <a class="repo-link" href="https://github.com/neoncarbon12/Mangura-Sources-Collection">View repository</a>
+    </nav>
+
+    <header class="hero">
+      <p class="eyebrow">Community collection</p>
+      <h1>More stories,<br><span>one collection.</span></h1>
+      <p class="intro">Add the available community sources to Mangura with a single collection URL. Each source stays independently updateable.</p>
+      <div class="actions">
+        <button id="copy-button" type="button">Copy collection URL</button>
+        <a class="secondary-action" href="collection.json">Open JSON manifest</a>
+      </div>
+      <code id="collection-url" aria-label="Collection URL"></code>
+      <p id="copy-status" class="status" role="status" aria-live="polite"></p>
+    </header>
+
+    <section class="collection" aria-labelledby="collection-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Available now</p>
+          <h2 id="collection-heading">Ready to import</h2>
+        </div>
+      </div>
+
+      <div class="collection-body">
+        <div class="collection-summary">
+          <div class="collection-mark" aria-hidden="true">+</div>
+          <div>
+            <h3 id="source-count" aria-live="polite">Loading collection…</h3>
+            <p>Provider details are shown inside Mangura after import.</p>
+          </div>
+        </div>
+
+        <aside class="disclaimer">
+          <p class="disclaimer-label">Please note</p>
+          <h3>Unofficial community sources</h3>
+          <p>This is an unofficial, community-maintained source collection. It is not affiliated with or endorsed by the websites it connects to or by the developers of Mangura. Mangura and this collection do not host manga content.</p>
+        </aside>
+      </div>
+
+      <noscript>
+        <p class="notice">JavaScript is disabled. You can still open the <a href="collection.json">collection manifest</a>.</p>
+      </noscript>
+    </section>
+
+    <footer>
+      <p>Mangura and this collection do not host manga content.</p>
+      <a href="https://github.com/neoncarbon12/Mangura-Sources-Collection/issues">Report a source issue</a>
+    </footer>
+  </main>
+
+  <script>
+    const collectionURL = new URL("collection.json", window.location.href);
+    const collectionURLNode = document.querySelector("#collection-url");
+    const copyButton = document.querySelector("#copy-button");
+    const copyStatus = document.querySelector("#copy-status");
+    const sourceCount = document.querySelector("#source-count");
+
+    collectionURLNode.textContent = collectionURL.href;
+
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(collectionURL.href);
+        copyButton.textContent = "Copied";
+        copyStatus.textContent = "Collection URL copied to clipboard.";
+        window.setTimeout(() => {
+          copyButton.textContent = "Copy collection URL";
+          copyStatus.textContent = "";
+        }, 2400);
+      } catch {
+        copyStatus.textContent = "Copy failed. Select the URL above and copy it manually.";
+      }
+    });
+
+    async function loadCollectionCount() {
+      try {
+        const manifestResponse = await fetch("collection.json", { cache: "no-cache" });
+        if (!manifestResponse.ok) throw new Error("Collection manifest unavailable");
+        const manifest = await manifestResponse.json();
+        const count = manifest.sources.length;
+        sourceCount.textContent = `${count} community ${count === 1 ? "source" : "sources"} available`;
+      } catch (error) {
+        sourceCount.textContent = "Collection details unavailable";
+        console.error(error);
+      }
+    }
+
+    loadCollectionCount();
+  </script>
+</body>
+</html>

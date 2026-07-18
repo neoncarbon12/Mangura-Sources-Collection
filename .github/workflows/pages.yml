@@ -1,0 +1,76 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Validate collection
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '.name | type == "string" and length > 0' collection.json > /dev/null
+          jq -e '.sources | type == "array" and length > 0' collection.json > /dev/null
+
+          duplicate_urls="$(jq -r '.sources[]' collection.json | sort | uniq -d)"
+          test -z "$duplicate_urls" || { echo "Duplicate source URLs: $duplicate_urls"; exit 1; }
+
+          while IFS= read -r source_url; do
+            source_file="resources/${source_url##*/}"
+            test -f "$source_file" || { echo "Missing source: $source_file"; exit 1; }
+            jq -e '.id | type == "string" and length > 0' "$source_file" > /dev/null
+            jq -e '.name | type == "string" and length > 0' "$source_file" > /dev/null
+            jq -e '.version | type == "number"' "$source_file" > /dev/null
+
+            logo_url="$(jq -r '.logo' "$source_file")"
+            case "$logo_url" in
+              https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/*) ;;
+              *) echo "Source icon must be hosted by this collection: $logo_url"; exit 1 ;;
+            esac
+            logo_file="resources/icons/${logo_url##*/}"
+            test -f "$logo_file" || { echo "Missing source icon: $logo_file"; exit 1; }
+          done < <(jq -r '.sources[]' collection.json)
+
+          duplicate_ids="$(
+            while IFS= read -r source_url; do
+              jq -r '.id' "resources/${source_url##*/}"
+            done < <(jq -r '.sources[]' collection.json) | sort | uniq -d
+          )"
+          test -z "$duplicate_ids" || { echo "Duplicate source IDs: $duplicate_ids"; exit 1; }
+
+      - name: Prepare static site
+        run: |
+          mkdir _site
+          cp index.html styles.css collection.json .nojekyll _site/
+          cp -R resources _site/resources
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

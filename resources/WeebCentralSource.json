@@ -1,0 +1,254 @@
+{
+	"id": "weebcentral",
+	"name": "WeebCentral",
+	"version": 2,
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/weebcentral.png",
+	"base_url": "https://weebcentral.com/",
+	"trending": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "search/data",
+			"method": "GET",
+			"query_parameters": [
+				{ "name": "limit", "value": "32" },
+				{ "name": "offset", "value": "{page}", "rules": ["multiplyBy(32)"] },
+				{ "name": "sort", "value": "Popularity" },
+				{ "name": "order", "value": "Descending" },
+				{ "name": "official", "value": "Any" },
+				{ "name": "anime", "value": "Any" },
+				{ "name": "adult", "value": "Any" },
+				{ "name": "display_mode", "value": "Full Display" }
+			],
+			"headers": {
+				"Referer": "https://weebcentral.com/search?sort=Popularity&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
+				"HX-Current-URL": "https://weebcentral.com/search?sort=Popularity&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
+				"HX-Trigger": "search-results",
+				"HX-Target": "search-results",
+				"HX-Request": "true"
+			}
+		},
+		"parser": {
+			"response_type": "html",
+			"results": {
+				"type": "node",
+				"expr": "article.bg-base-300",
+				"for_each": {
+					"manga_id": {
+						"expr": "a[href]",
+						"attr": "href",
+						"ops": [
+							{ "type": "split", "pattern": "/" },
+							{ "type": "extract_second_last" }
+						]
+					},
+					"manga_title": {
+						"expr": "article div.text-ellipsis.truncate",
+						"attr": "text",
+						"ops": [{ "type": "trim" }]
+					},
+					"manga_cover": {
+						"type": "url",
+						"expr": "img[alt$=cover]",
+						"attr": "src",
+						"headers": { "Referer": "{base_url}" }
+					}
+				}
+			}
+		}
+	},
+	"search": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "search/data",
+			"method": "GET",
+			"query_parameters": [
+				{ "name": "text", "value": "{query}" },
+				{ "name": "limit", "value": "32" },
+				{ "name": "offset", "value": "{page}", "rules": ["multiplyBy(32)"] },
+				{ "name": "sort", "value": "Best Match" },
+				{ "name": "order", "value": "Descending" },
+				{ "name": "official", "value": "Any" },
+				{ "name": "anime", "value": "Any" },
+				{ "name": "adult", "value": "Any" },
+				{ "name": "display_mode", "value": "Full Display" }
+			],
+			"headers": {
+				"Referer": "https://weebcentral.com/search?sort=Best+Match&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
+				"HX-Current-URL": "https://weebcentral.com/search?sort=Best+Match&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
+				"HX-Trigger": "advanced-search-form",
+				"HX-Target": "search-results",
+				"HX-Request": "true"
+			}
+		},
+		"parser": {
+			"response_type": "html",
+			"results": {
+				"type": "node",
+				"expr": "article.bg-base-300",
+				"for_each": {
+					"manga_id": {
+						"expr": "a[href]",
+						"attr": "href",
+						"ops": [
+							{ "type": "split", "pattern": "/" },
+							{ "type": "extract_second_last" }
+						]
+					},
+					"manga_title": {
+						"expr": "article div.text-ellipsis.truncate",
+						"attr": "text",
+						"ops": [{ "type": "trim" }]
+					},
+					"manga_cover": {
+						"type": "url",
+						"expr": "img[alt$=cover]",
+						"attr": "src",
+						"headers": { "Referer": "{base_url}" }
+					}
+				}
+			}
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "series",
+			"path_parameters": [{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }],
+			"headers": { "Referer": "https://weebcentral.com/" }
+		},
+		"parser": {
+			"response_type": "html",
+			"manga_title": {
+				"expr": "head title",
+				"attr": "text",
+				"ops": [
+					{ "type": "replace", "pattern": " | Weeb Central", "value": "" },
+					{ "type": "trim" }
+				]
+			},
+			"manga_authors": {
+				"type": "list",
+				"expr": "ul.flex li:has(strong:contains(Author)) a",
+				"attr": "text"
+			},
+			"manga_status": {
+				"expr": "ul.flex li strong:contains(Status) + a",
+				"attr": "text"
+			},
+			"manga_tags": {
+				"type": "list",
+				"expr": "ul.flex li:has(strong:contains(Tags)) a",
+				"attr": "text"
+			},
+			"manga_description": {
+				"expr": "ul.flex li strong:contains(Description) + p",
+				"attr": "text"
+			},
+			"manga_cover": {
+				"type": "url",
+				"expr": "picture img",
+				"attr": "src",
+				"headers": { "Referer": "{base_url}" }
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "series",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] },
+				{ "value": "full-chapter-list" }
+			],
+			"headers": {
+				"Referer": "{manga_url}",
+				"HX-Current-URL": "{manga_url}",
+				"HX-Target": "chapter-list",
+				"HX-Request": "true"
+			}
+		},
+		"parser": {
+			"response_type": "html",
+			"chapters": {
+				"type": "node",
+				"expr": "div.flex.items-center:has(a[href*=\"/chapters/\"])",
+				"for_each": {
+					"chapter_id": {
+						"expr": "a[href]",
+						"attr": "href",
+						"ops": [
+							{ "type": "split", "pattern": "/" },
+							{ "type": "extract_last" }
+						]
+					},
+					"chapter_url": {
+						"type": "url",
+						"expr": "a[href]",
+						"attr": "href",
+						"headers": { "Referer": "{manga_url}" }
+					},
+					"chapter_title": {
+						"expr": "span.grow > span",
+						"attr": "text"
+					},
+					"chapter_number": {
+						"expr": "span.grow > span",
+						"attr": "text",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "^\\D+", "value": "" },
+							{ "type": "trim" }
+						]
+					},
+					"chapter_uploaded_at": {
+						"type": "date",
+						"expr": "time[datetime]",
+						"attr": "text",
+						"format": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"
+					}
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "html_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"path_parameters": [{ "value": "images" }],
+			"query_parameters": [
+				{ "name": "is_prev", "value": "False" },
+				{ "name": "current_page", "value": "1" },
+				{ "name": "reading_style", "value": "long_strip" }
+			],
+			"headers": {
+				"Referer": "{chapter_url}",
+				"HX-Current-URL": "{chapter_url}",
+				"HX-Request": "true"
+			}
+		},
+		"parser": {
+			"response_type": "html",
+			"pages": {
+				"type": "node",
+				"expr": "section img",
+				"for_each": {
+					"page_url": {
+						"type": "url",
+						"attr": "src",
+						"headers": { "Referer": "{base_url}" }
+					}
+				}
+			}
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"complete": "completed",
+			"canceled": "cancelled"
+		}
+	}
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Mangura Community Sources",
+  "sources": [
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/MangaFireSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/ManganeloSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/WeebCentralSource.json"
+  ]
+}
