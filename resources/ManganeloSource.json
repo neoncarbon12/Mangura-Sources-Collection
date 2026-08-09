@@ -4,22 +4,12 @@
 	"version": 2,
 	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/manganelo.webp",
 	"base_url": "https://www.nelomanga.net/",
-	"trending": {
-		"request": {
-			"request_type": "html_request",
-			"type": "relative",
-			"base": "manga-list/hot-manga/",
-			"method": "GET",
-			"query_parameters": [{ "value": "{page}", "rules": ["startsAtOne"] }],
-			"headers": {
-				"Referer": "{base_url}"
-			}
-		},
-		"parser": {
+	"catalog": {
+		"default_parser": {
 			"response_type": "html",
 			"results": {
 				"type": "node",
-				"expr": ".comic-list .list-comic-item-wrap",
+				"expr": ".comic-list [class=\"list-comic-item-wrap\"]",
 				"for_each": {
 					"manga_id": {
 						"expr": "a",
@@ -43,44 +33,68 @@
 					}
 				}
 			}
-		}
-	},
-	"search": {
-		"request": {
-			"request_type": "html_request",
-			"type": "relative",
-			"base": "search/story/",
-			"method": "GET",
-			"path_parameters": [{ "value": "{query}", "rules": ["forceNonEmpty"] }],
-			"query_parameters": [{ "value": "{page}", "rules": ["startsAtOne"] }],
-			"headers": {
-				"Referer": "{base_url}"
+		},
+		"trending": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "manga-list/hot-manga/",
+				"method": "GET",
+				"query_parameters": [{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }],
+				"headers": {
+					"Referer": "{base_url}"
+				}
 			}
 		},
-		"parser": {
-			"response_type": "html",
-			"results": {
-				"type": "node",
-				"expr": ".panel_story_list .story_item",
-				"for_each": {
-					"manga_id": {
-						"expr": "a",
-						"attr": "href",
-						"ops": [
-							{ "type": "regex_replace", "pattern": "^.*/manga/", "value": "" },
-							{ "type": "trim" }
-						]
-					},
-					"manga_title": {
-						"expr": ".story_name a",
-						"attr": "text"
-					},
-					"manga_cover": {
-						"type": "url",
-						"expr": "a img",
-						"attr": "src",
-						"headers": {
-							"Referer": "{base_url}"
+		"newest": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "manga-list/new-manga/",
+				"method": "GET",
+				"query_parameters": [{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }],
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "search/story/",
+				"method": "GET",
+				"path_parameters": [{ "value": "{query}", "rules": ["forceNonEmpty"] }],
+				"query_parameters": [{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }],
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			},
+			"parser": {
+				"response_type": "html",
+				"results": {
+					"type": "node",
+					"expr": ".panel_story_list .story_item",
+					"for_each": {
+						"manga_id": {
+							"expr": "a",
+							"attr": "href",
+							"ops": [
+								{ "type": "regex_replace", "pattern": "^.*/manga/", "value": "" },
+								{ "type": "trim" }
+							]
+						},
+						"manga_title": {
+							"expr": ".story_name a",
+							"attr": "text"
+						},
+						"manga_cover": {
+							"type": "url",
+							"expr": "a img",
+							"attr": "src",
+							"headers": {
+								"Referer": "{base_url}"
+							}
 						}
 					}
 				}
@@ -187,11 +201,11 @@
 					"chapter_id": {
 						"key": "chapter_slug"
 					},
-					"chapter_url": {
-						"key": "chapter_slug",
-						"ops": [
-							{ "type": "as_path_parameter", "pattern": "{manga_url}", "value": "{manga_url}" }
-						]
+						"chapter_url": {
+							"key": "chapter_slug",
+							"ops": [
+								{ "type": "as_path_parameter", "pattern": "{manga_url}", "value": "{manga_url}" }
+							]
 					},
 					"chapter_number": {
 						"type": "double",

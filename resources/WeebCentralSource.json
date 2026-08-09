@@ -1,34 +1,11 @@
 {
 	"id": "weebcentral",
 	"name": "WeebCentral",
-	"version": 2,
+	"version": 3,
 	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/weebcentral.png",
 	"base_url": "https://weebcentral.com/",
-	"trending": {
-		"request": {
-			"request_type": "html_request",
-			"type": "relative",
-			"base": "search/data",
-			"method": "GET",
-			"query_parameters": [
-				{ "name": "limit", "value": "32" },
-				{ "name": "offset", "value": "{page}", "rules": ["multiplyBy(32)"] },
-				{ "name": "sort", "value": "Popularity" },
-				{ "name": "order", "value": "Descending" },
-				{ "name": "official", "value": "Any" },
-				{ "name": "anime", "value": "Any" },
-				{ "name": "adult", "value": "Any" },
-				{ "name": "display_mode", "value": "Full Display" }
-			],
-			"headers": {
-				"Referer": "https://weebcentral.com/search?sort=Popularity&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
-				"HX-Current-URL": "https://weebcentral.com/search?sort=Popularity&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
-				"HX-Trigger": "search-results",
-				"HX-Target": "search-results",
-				"HX-Request": "true"
-			}
-		},
-		"parser": {
+	"catalog": {
+		"default_parser": {
 			"response_type": "html",
 			"results": {
 				"type": "node",
@@ -55,60 +32,131 @@
 					}
 				}
 			}
-		}
-	},
-	"search": {
-		"request": {
-			"request_type": "html_request",
-			"type": "relative",
-			"base": "search/data",
-			"method": "GET",
-			"query_parameters": [
-				{ "name": "text", "value": "{query}" },
-				{ "name": "limit", "value": "32" },
-				{ "name": "offset", "value": "{page}", "rules": ["multiplyBy(32)"] },
-				{ "name": "sort", "value": "Best Match" },
-				{ "name": "order", "value": "Descending" },
-				{ "name": "official", "value": "Any" },
-				{ "name": "anime", "value": "Any" },
-				{ "name": "adult", "value": "Any" },
-				{ "name": "display_mode", "value": "Full Display" }
-			],
-			"headers": {
-				"Referer": "https://weebcentral.com/search?sort=Best+Match&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
-				"HX-Current-URL": "https://weebcentral.com/search?sort=Best+Match&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
-				"HX-Trigger": "advanced-search-form",
-				"HX-Target": "search-results",
-				"HX-Request": "true"
-			}
 		},
-		"parser": {
-			"response_type": "html",
-			"results": {
-				"type": "node",
-				"expr": "article.bg-base-300",
-				"for_each": {
-					"manga_id": {
-						"expr": "a[href]",
-						"attr": "href",
-						"ops": [
-							{ "type": "split", "pattern": "/" },
-							{ "type": "extract_second_last" }
-						]
-					},
-					"manga_title": {
-						"expr": "article div.text-ellipsis.truncate",
-						"attr": "text",
-						"ops": [{ "type": "trim" }]
-					},
-					"manga_cover": {
-						"type": "url",
-						"expr": "img[alt$=cover]",
-						"attr": "src",
-						"headers": { "Referer": "{base_url}" }
-					}
+		"trending": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "search/data",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "limit", "value": "32" },
+					{ "name": "offset", "value": "{page}", "rules": ["multiplyBy(32)"] },
+					{ "name": "sort", "value": "Popularity" },
+					{ "name": "order", "value": "Descending" },
+					{ "name": "official", "value": "Any" },
+					{ "name": "anime", "value": "Any" },
+					{ "name": "adult", "value": "Any" },
+					{ "name": "display_mode", "value": "Full Display" }
+				],
+				"headers": {
+					"Referer": "https://weebcentral.com/search?sort=Popularity&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
+					"HX-Current-URL": "https://weebcentral.com/search?sort=Popularity&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
+					"HX-Trigger": "search-results",
+					"HX-Target": "search-results",
+					"HX-Request": "true"
 				}
 			}
+		},
+		"newest": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "search/data",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "limit", "value": "32" },
+					{ "name": "offset", "value": "{page}", "rules": ["multiplyBy(32)"] },
+					{ "name": "sort", "value": "Latest Updates" },
+					{ "name": "order", "value": "Descending" },
+					{ "name": "official", "value": "Any" },
+					{ "name": "anime", "value": "Any" },
+					{ "name": "adult", "value": "Any" },
+					{ "name": "display_mode", "value": "Full Display" }
+				],
+				"headers": {
+					"Referer": "https://weebcentral.com/search?sort=Latest+Updates&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
+					"HX-Current-URL": "https://weebcentral.com/search?sort=Latest+Updates&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
+					"HX-Trigger": "search-results",
+					"HX-Target": "search-results",
+					"HX-Request": "true"
+				}
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "search/data",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "text", "value": "{query}" },
+					{ "name": "included_tag", "value": "{genres}", "collection_encoding": "repeat" },
+					{ "name": "limit", "value": "32" },
+					{ "name": "offset", "value": "{page}", "rules": ["multiplyBy(32)"] },
+					{ "name": "sort", "value": "Best Match" },
+					{ "name": "order", "value": "Descending" },
+					{ "name": "official", "value": "Any" },
+					{ "name": "anime", "value": "Any" },
+					{ "name": "adult", "value": "Any" },
+					{ "name": "display_mode", "value": "Full Display" }
+				],
+				"headers": {
+					"Referer": "https://weebcentral.com/search?sort=Best+Match&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
+					"HX-Current-URL": "https://weebcentral.com/search?sort=Best+Match&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display",
+					"HX-Trigger": "advanced-search-form",
+					"HX-Target": "search-results",
+					"HX-Request": "true"
+				}
+			},
+			"filters": [
+				{
+					"id": "genres",
+					"kind": "tags",
+					"title": "Genres",
+					"selection": "multiple",
+					"options": [
+						{ "value": "Action" },
+						{ "value": "Adult" },
+						{ "value": "Adventure" },
+						{ "value": "Comedy" },
+						{ "value": "Doujinshi" },
+						{ "value": "Drama" },
+						{ "value": "Ecchi" },
+						{ "value": "Fantasy" },
+						{ "value": "Gender Bender" },
+						{ "value": "Harem" },
+						{ "value": "Hentai" },
+						{ "value": "Historical" },
+						{ "value": "Horror" },
+						{ "value": "Isekai" },
+						{ "value": "Josei" },
+						{ "value": "Lolicon" },
+						{ "value": "Martial Arts" },
+						{ "value": "Mature" },
+						{ "value": "Mecha" },
+						{ "value": "Mystery" },
+						{ "value": "Psychological" },
+						{ "value": "Romance" },
+						{ "value": "School Life" },
+						{ "value": "Sci-fi" },
+						{ "value": "Seinen" },
+						{ "value": "Shotacon" },
+						{ "value": "Shoujo" },
+						{ "value": "Shoujo Ai" },
+						{ "value": "Shounen" },
+						{ "value": "Shounen Ai" },
+						{ "value": "Slice of Life" },
+						{ "value": "Smut" },
+						{ "value": "Sports" },
+						{ "value": "Supernatural" },
+						{ "value": "Tragedy" },
+						{ "value": "Yaoi" },
+						{ "value": "Yuri" },
+						{ "value": "Other" }
+					]
+				}
+			]
 		}
 	},
 	"details": {
@@ -189,7 +237,10 @@
 						"type": "url",
 						"expr": "a[href]",
 						"attr": "href",
-						"headers": { "Referer": "{manga_url}" }
+						"headers": { "Referer": "{manga_url}" },
+						"ops": [
+							{ "type": "as_path_parameter", "pattern": "{base_url}", "value": "{manga_url}" }
+						]
 					},
 					"chapter_title": {
 						"expr": "span.grow > span",
