@@ -2,7 +2,7 @@
 	"id": "chikari",
 	"name": "chikari.moe",
 	"version": 1,
-	"logo": "https://chikari.moe/apple-touch-icon.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/chikari.png",
 	"base_url": "https://chikari.moe/",
 	"catalog": {
 		"default_parser": {

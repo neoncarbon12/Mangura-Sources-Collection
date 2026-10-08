@@ -2,7 +2,7 @@
 	"id": "mangageko",
 	"name": "MangaGeko",
 	"version": 1,
-	"logo": "https://www.mgeko.cc/static/img/logo_200x200.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/mangageko.png",
 	"base_url": "https://www.mgeko.cc/",
 	"catalog": {
 		"default_parser": {

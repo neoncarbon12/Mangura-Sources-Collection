@@ -2,7 +2,7 @@
 	"id": "oriyami",
 	"name": "OriYami",
 	"version": 1,
-	"logo": "https://oriyami.com/apple-touch-icon.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/oriyami.png",
 	"base_url": "https://oriyami.com/",
 	"catalog": {
 		"default_parser": {

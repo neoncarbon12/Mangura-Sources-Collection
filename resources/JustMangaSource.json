@@ -2,7 +2,7 @@
 	"id": "justmanga",
 	"name": "JustManga",
 	"version": 1,
-	"logo": "https://justmanga.cc/apple-touch-icon.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/justmanga.png",
 	"base_url": "https://justmanga.cc/",
 	"catalog": {
 		"default_parser": {

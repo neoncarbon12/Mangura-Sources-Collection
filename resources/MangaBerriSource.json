@@ -2,7 +2,7 @@
 	"id": "mangaberri",
 	"name": "MangaBerri",
 	"version": 1,
-	"logo": "https://mangaberri.com/images/pwa-180.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/mangaberri.png",
 	"base_url": "https://mangaberri.com/",
 	"catalog": {
 		"default_parser": {

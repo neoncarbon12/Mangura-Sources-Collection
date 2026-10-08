@@ -2,7 +2,7 @@
 	"id": "dynastyreader",
 	"name": "Dynasty Reader",
 	"version": 1,
-	"logo": "https://dynasty-scans.com/assets/favicon-96599a954b862bfaaa71372cc403a6ab.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/dynastyreader.png",
 	"base_url": "https://dynasty-scans.com/",
 	"catalog": {
 		"default_parser": {

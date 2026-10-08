@@ -2,7 +2,7 @@
 	"id": "mangade",
 	"name": "MangaDE",
 	"version": 1,
-	"logo": "https://mangade.io/assets/logonettruyen_black.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/mangade.png",
 	"base_url": "https://mangade.io/",
 	"catalog": {
 		"default_parser": {

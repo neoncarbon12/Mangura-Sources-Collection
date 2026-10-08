@@ -2,7 +2,7 @@
 	"id": "manhuabuddy",
 	"name": "ManhuaBuddy",
 	"version": 1,
-	"logo": "https://static.manhuabuddy.com/images/icons/apple-touch-icon.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/manhuabuddy.png",
 	"base_url": "https://manhuabuddy.com/",
 	"catalog": {
 		"default_parser": {

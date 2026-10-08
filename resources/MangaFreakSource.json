@@ -2,7 +2,7 @@
 	"id": "mangafreak",
 	"name": "MangaFreak",
 	"version": 1,
-	"logo": "https://ww3.mangafreak.me/misc/MF.ico",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/mangafreak.png",
 	"base_url": "https://ww3.mangafreak.me/",
 	"catalog": {
 		"default_parser": {

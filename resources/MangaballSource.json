@@ -2,7 +2,7 @@
 	"id": "mangaball",
 	"name": "Mangaball",
 	"version": 1,
-	"logo": "https://mangaball.com/frontend/images/favicon/favicon-192x192.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/mangaball.png",
 	"base_url": "https://mangaball.com/",
 	"catalog": {
 		"default_parser": {

@@ -2,7 +2,7 @@
 	"id": "senmanga",
 	"name": "SenManga",
 	"version": 1,
-	"logo": "https://raw.senmanga.com/favicon.ico",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/senmanga.png",
 	"base_url": "https://raw.senmanga.com/",
 	"catalog": {
 		"default_parser": {

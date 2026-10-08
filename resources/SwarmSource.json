@@ -2,7 +2,7 @@
 	"id": "swarm",
 	"name": "Swarm",
 	"version": 1,
-	"logo": "https://swarm.ws/logo.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/swarm.png",
 	"base_url": "https://swarm.ws/",
 	"catalog": {
 		"default_parser": {

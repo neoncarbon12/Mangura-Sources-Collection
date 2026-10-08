@@ -2,7 +2,7 @@
 	"id": "mangak",
 	"name": "MangaK",
 	"version": 1,
-	"logo": "https://mangak.io/static/sites/mangak/icons/apple-touch-icon.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/mangak.png",
 	"base_url": "https://mangak.io/",
 	"catalog": {
 		"default_parser": {

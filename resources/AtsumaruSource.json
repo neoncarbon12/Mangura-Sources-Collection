@@ -2,7 +2,7 @@
 	"id": "atsumaru",
 	"name": "Atsumaru",
 	"version": 1,
-	"logo": "https://atsu.moe/favicon/apple-touch-icon.png",
+	"logo": "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/icons/atsumaru.png",
 	"base_url": "https://atsu.moe/",
 	"catalog": {
 		"default_parser": {
