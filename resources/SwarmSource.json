@@ -1,0 +1,203 @@
+{
+	"id": "swarm",
+	"name": "Swarm",
+	"version": 1,
+	"logo": "https://swarm.ws/logo.png",
+	"base_url": "https://swarm.ws/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "json",
+			"results": {
+				"type": "node",
+				"key": "data",
+				"for_each": {
+					"manga_id": { "key": "url" },
+					"manga_title": { "key": "manga_title" },
+					"manga_cover": {
+						"type": "url",
+						"key": "url",
+						"headers": { "Referer": "{base_url}" },
+						"ops": [
+							{ "type": "append", "value": ".png" },
+							{ "type": "prepend_if_missing", "value": "https://swarm.ws/comic/" }
+						]
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "json_request",
+				"type": "relative",
+				"base": "api/latest",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "limit", "value": "20" },
+					{ "name": "filter", "value": "hot" },
+					{ "name": "nsfw", "value": "false" },
+					{ "name": "suggestive", "value": "false" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"newest": {
+			"request": {
+				"request_type": "json_request",
+				"type": "relative",
+				"base": "api/latest",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "limit", "value": "20" },
+					{ "name": "filter", "value": "new" },
+					{ "name": "nsfw", "value": "false" },
+					{ "name": "suggestive", "value": "false" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "json_request",
+				"type": "relative",
+				"base": "api/comic/search",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "title", "value": "{query}", "rules": ["forceNonEmpty"] },
+					{ "name": "limit", "value": "20" },
+					{ "name": "offset", "value": "{page}", "rules": ["multiplyBy(20)"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			},
+			"parser": {
+				"response_type": "json",
+				"results": {
+					"type": "node",
+					"key": "data",
+					"for_each": {
+						"manga_id": { "key": "url" },
+						"manga_title": { "key": "title" },
+						"manga_cover": {
+							"type": "url",
+							"key": "url",
+							"headers": { "Referer": "{base_url}" },
+							"ops": [
+								{ "type": "append", "value": ".png" },
+								{ "type": "prepend_if_missing", "value": "https://swarm.ws/comic/" }
+							]
+						}
+					}
+				}
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "json_request",
+			"type": "relative",
+			"base": "api/comic/slug",
+			"method": "GET",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] },
+				{ "value": "details" }
+			],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"manga_title": { "key": "manga.title" },
+			"manga_description": {
+				"key": "manga.description",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_status": { "key": "manga.status" },
+			"manga_authors": { "type": "list", "key": "manga.authors" },
+			"manga_tags": { "type": "list", "key": "manga.genres" },
+			"manga_cover": {
+				"type": "url",
+				"key": "manga.url",
+				"headers": { "Referer": "{base_url}" },
+				"ops": [
+					{ "type": "append", "value": ".png" },
+					{ "type": "prepend_if_missing", "value": "https://swarm.ws/comic/" }
+				]
+			},
+			"manga_url": {
+				"type": "url",
+				"key": "manga.url",
+				"ops": [{ "type": "prepend_if_missing", "value": "https://swarm.ws/comic/" }]
+			},
+			"manga_last_updated": {
+				"type": "date",
+				"key": "manga.last_updated",
+				"format": "yyyy-MM-dd",
+				"ops": [{ "type": "regex_replace", "pattern": "T[\\s\\S]*$", "value": "" }]
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "json_request",
+			"type": "relative",
+			"base": "api/comic/slug",
+			"method": "GET",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] },
+				{ "value": "details" }
+			],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"chapters": {
+				"type": "node",
+				"key": "chapters",
+				"for_each": {
+					"chapter_id": { "key": "id" },
+					"chapter_url": {
+						"type": "url",
+						"key": "id",
+						"ops": [{ "type": "prepend_if_missing", "value": "https://api.swarm.ws/api/chapter/" }]
+					},
+					"chapter_number": { "type": "double", "key": "number" },
+					"chapter_title": {
+						"key": "title",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "\\n[\\s\\S]*$", "value": "" },
+							{ "type": "trim" }
+						]
+					},
+					"chapter_uploaded_at": {
+						"type": "date",
+						"key": "published_date",
+						"format": "yyyy-MM-dd",
+						"ops": [{ "type": "regex_replace", "pattern": "T[\\s\\S]*$", "value": "" }]
+					}
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "json_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"method": "GET",
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"pages": { "type": "list", "key": "data.pages" }
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"ongoing": "ongoing",
+			"completed": "completed",
+			"hiatus": "hiatus",
+			"unknown": "unknown"
+		}
+	}
+}

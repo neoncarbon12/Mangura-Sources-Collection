@@ -1,0 +1,215 @@
+{
+	"id": "mangaball",
+	"name": "Mangaball",
+	"version": 1,
+	"logo": "https://mangaball.com/frontend/images/favicon/favicon-192x192.png",
+	"base_url": "https://mangaball.com/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "json",
+			"results": {
+				"type": "node",
+				"key": "data",
+				"for_each": {
+					"manga_id": {
+						"key": "_id"
+					},
+					"manga_title": {
+						"key": "name"
+					},
+					"manga_cover": {
+						"type": "url",
+						"key": "image.cover.path",
+						"ops": [
+							{ "type": "replace", "pattern": "\\", "value": "/" },
+							{ "type": "prepend_if_missing", "value": "https://bulbasaur.poke-black-and-white.net/covers/" }
+						],
+						"headers": {
+							"Referer": "{base_url}"
+						}
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://api.mangaball.com/api/v1/title/search-advanced",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort_by", "value": "views" },
+					{ "name": "adult_mode", "value": "no_18" },
+					{ "name": "limit", "value": "24" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://api.mangaball.com/api/v1/title/search-advanced",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "keyword", "value": "{query}", "rules": ["forceNonEmpty"] },
+					{ "name": "adult_mode", "value": "no_18" },
+					{ "name": "limit", "value": "24" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "title-detail",
+			"method": "GET",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }
+			],
+			"headers": {
+				"Referer": "{base_url}"
+			}
+		},
+		"parser": {
+			"response_type": "html",
+			"manga_title": {
+				"expr": "h1",
+				"attr": "text",
+				"ops": [
+					{ "type": "trim" }
+				]
+			},
+			"manga_description": {
+				"expr": "p.line-clamp-3",
+				"attr": "text",
+				"ops": [
+					{ "type": "trim" }
+				]
+			},
+			"manga_status": {
+				"expr": "span:contains(Publication Status:) > strong",
+				"attr": "text",
+				"ops": [
+					{ "type": "trim" },
+					{ "type": "lowercase" }
+				]
+			},
+			"manga_authors": {
+				"type": "list",
+				"expr": "span:contains(Author:) > strong",
+				"attr": "text",
+				"ops": [
+					{ "type": "split", "pattern": "," },
+					{ "type": "trim" }
+				]
+			},
+			"manga_tags": {
+				"type": "list",
+				"expr": "span:contains(Genres:) + div a",
+				"attr": "text",
+				"ops": [
+					{ "type": "trim" }
+				]
+			},
+			"manga_cover": {
+				"type": "url",
+				"expr": "meta[property=og:image]",
+				"attr": "content",
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "json_request",
+			"type": "absolute",
+			"base": "https://api.mangaball.com/api/v1/title/chapter-listing",
+			"method": "GET",
+			"query_parameters": [
+				{ "name": "title_id", "value": "{manga_id}", "rules": ["forceNonEmpty"] },
+				{ "name": "page", "value": "1" },
+				{ "name": "limit", "value": "10000" },
+				{ "name": "language", "value": "en" }
+			],
+			"headers": {
+				"Referer": "{base_url}"
+			}
+		},
+		"parser": {
+			"response_type": "json",
+			"chapters": {
+				"type": "node",
+				"key": "data",
+				"for_each": {
+					"chapter_id": {
+						"key": "id"
+					},
+					"chapter_url": {
+						"type": "url",
+						"key": "id",
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "https://api.mangaball.com/api/v1/chapter-detail?chapter_id=" }
+						]
+					},
+					"chapter_number": {
+						"type": "double",
+						"key": "number"
+					},
+					"chapter_title": {
+						"key": "group_name"
+					},
+					"chapter_uploaded_at": {
+						"type": "date",
+						"key": "created_at",
+						"format": "yyyy-MM-dd'T'HH:mm:ssZ",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "\\.\\d+$", "value": "" },
+							{ "type": "append", "value": "+0000" }
+						]
+					}
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "json_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"method": "GET",
+			"headers": {
+				"Referer": "{base_url}"
+			}
+		},
+		"parser": {
+			"response_type": "json",
+			"pages": {
+				"type": "list",
+				"key": "data.chapter.pages"
+			}
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"ongoing": "ongoing",
+			"completed": "completed",
+			"hiatus": "hiatus",
+			"on_hold": "hiatus",
+			"on-hold": "hiatus",
+			"cancelled": "cancelled",
+			"canceled": "cancelled"
+		}
+	}
+}

@@ -1,0 +1,264 @@
+{
+	"id": "atsumaru",
+	"name": "Atsumaru",
+	"version": 1,
+	"logo": "https://atsu.moe/favicon/apple-touch-icon.png",
+	"base_url": "https://atsu.moe/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "json",
+			"results": {
+				"type": "node",
+				"key": "items",
+				"for_each": {
+					"manga_id": {
+						"key": "id"
+					},
+					"manga_title": {
+						"key": "title"
+					},
+					"manga_cover": {
+						"type": "url",
+						"key": "image",
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "https://cdn.atsu.moe/static/" }
+						],
+						"headers": {
+							"Referer": "{base_url}",
+							"Sec-Fetch-Site": "same-site"
+						}
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "json_request",
+				"type": "relative",
+				"base": "api/infinite/trending",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "page", "value": "{page}" },
+					{ "name": "types", "value": "Manga,Manwha,Manhua,OEL" }
+				],
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			}
+		},
+		"newest": {
+			"request": {
+				"request_type": "json_request",
+				"type": "relative",
+				"base": "api/home2/recentlyUpdated",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "offset", "value": "{page}", "rules": ["multiplyBy(40)"] },
+					{ "name": "limit", "value": "40" },
+					{ "name": "mediums", "value": "Comic" }
+				],
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "json_request",
+				"type": "relative",
+				"base": "collections/manga/documents/search",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "q", "value": "{query}", "rules": ["forceNonEmpty"] },
+					{ "name": "query_by", "value": "title,englishTitle,otherNames,authors,acronyms" },
+					{ "name": "query_by_weights", "value": "4,3,2,2,1" },
+					{ "name": "prefix", "value": "true,true,true,true,false" },
+					{ "name": "filter_by", "value": "hidden:!=true && isAdult:=false && medium:=Comic" },
+					{ "name": "include_fields", "value": "id,title,poster" },
+					{ "name": "per_page", "value": "24" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			},
+			"parser": {
+				"response_type": "json",
+				"results": {
+					"type": "node",
+					"key": "hits",
+					"for_each": {
+						"manga_id": {
+							"key": "document.id"
+						},
+						"manga_title": {
+							"key": "document.title"
+						},
+						"manga_cover": {
+							"type": "url",
+							"key": "document.poster",
+							"ops": [
+								{ "type": "prepend_if_missing", "value": "https://cdn.atsu.moe" }
+							],
+							"headers": {
+								"Referer": "{base_url}",
+								"Sec-Fetch-Site": "same-site"
+							}
+						}
+					}
+				}
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "json_request",
+			"type": "relative",
+			"base": "api/manga/page",
+			"method": "GET",
+			"query_parameters": [
+				{ "name": "id", "value": "{manga_id}", "rules": ["forceNonEmpty"] }
+			],
+			"headers": {
+				"Referer": "{base_url}"
+			}
+		},
+		"parser": {
+			"response_type": "json",
+			"manga_url": {
+				"type": "url",
+				"key": "mangaPage.id",
+				"ops": [
+					{ "type": "prepend_if_missing", "value": "https://atsu.moe/manga/" }
+				]
+			},
+			"manga_title": {
+				"key": "mangaPage.title"
+			},
+			"manga_description": {
+				"key": "mangaPage.synopsis",
+				"ops": [
+					{ "type": "trim" }
+				]
+			},
+			"manga_status": {
+				"key": "mangaPage.status"
+			},
+			"manga_authors": {
+				"type": "list",
+				"key": "mangaPage.id",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "[\\s\\S]*", "value": "" },
+					{ "type": "split", "pattern": "," }
+				]
+			},
+			"manga_tags": {
+				"type": "list",
+				"key": "mangaPage.id",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "[\\s\\S]*", "value": "" },
+					{ "type": "split", "pattern": "," }
+				]
+			},
+			"manga_cover": {
+				"type": "url",
+				"key": "mangaPage.poster.image",
+				"ops": [
+					{ "type": "prepend_if_missing", "value": "https://cdn.atsu.moe/static/" }
+				],
+				"headers": {
+					"Referer": "{base_url}",
+					"Sec-Fetch-Site": "same-site"
+				}
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "json_request",
+			"type": "relative",
+			"base": "api/manga/allChapters",
+			"method": "GET",
+			"query_parameters": [
+				{ "name": "mangaId", "value": "{manga_id}", "rules": ["forceNonEmpty"] }
+			],
+			"headers": {
+				"Referer": "{base_url}"
+			}
+		},
+		"parser": {
+			"response_type": "json",
+			"chapters": {
+				"type": "node",
+				"key": "chapters",
+				"for_each": {
+					"chapter_id": {
+						"key": "id"
+					},
+					"chapter_url": {
+						"type": "url",
+						"key": "id",
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "&chapterId=" },
+							{ "type": "prepend_if_missing", "value": "{manga_id}" },
+							{ "type": "prepend_if_missing", "value": "https://atsu.moe/api/read/chapter?mangaId=" }
+						]
+					},
+					"chapter_number": {
+						"type": "double",
+						"key": "number"
+					},
+					"chapter_title": {
+						"key": "title"
+					},
+					"chapter_uploaded_at": {
+						"type": "date",
+						"key": "createdAt",
+						"format": "epochMillis"
+					}
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "json_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"method": "GET",
+			"headers": {
+				"Referer": "{base_url}"
+			}
+		},
+		"parser": {
+			"response_type": "json",
+			"pages": {
+				"type": "node",
+				"key": "readChapter.pages",
+				"for_each": {
+					"page_url": {
+						"type": "url",
+						"key": "image",
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "https://cdn.atsu.moe" }
+						],
+						"headers": {
+							"Referer": "{base_url}",
+							"Sec-Fetch-Site": "same-site"
+						}
+					}
+				}
+			}
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"ongoing": "ongoing",
+			"completed": "completed",
+			"hiatus": "hiatus",
+			"canceled": "cancelled",
+			"cancelled": "cancelled"
+		}
+	}
+}

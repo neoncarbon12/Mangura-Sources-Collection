@@ -1,0 +1,194 @@
+{
+	"id": "vymanga",
+	"name": "VyManga",
+	"version": 1,
+	"logo": "https://pvzcdelcc.xyz/web/img/icon-green.png",
+	"base_url": "https://mangavyvy.com/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "html",
+			"results": {
+				"type": "node",
+				"expr": "div.comic-item:has(a[href*=\"/manga/\"])",
+				"for_each": {
+					"manga_id": {
+						"expr": "a[href*=\"/manga/\"]",
+						"attr": "href",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "^.*/manga/", "value": "" },
+							{ "type": "trim" }
+						]
+					},
+					"manga_title": {
+						"expr": ".comic-title",
+						"attr": "text",
+						"ops": [{ "type": "trim" }]
+					},
+					"manga_cover": {
+						"type": "url",
+						"expr": "img[data-src]",
+						"attr": "data-src",
+						"headers": { "Referer": "{base_url}" }
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "search",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort", "value": "viewed" },
+					{ "name": "sort_type", "value": "desc" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"newest": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "search",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort", "value": "updated_at" },
+					{ "name": "sort_type", "value": "desc" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "search",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "q", "value": "{query}" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "manga",
+			"method": "GET",
+			"path_parameters": [{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "html",
+			"manga_title": {
+				"expr": ".div-manga h1.title",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_description": {
+				"expr": ".summary p.content",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_status": {
+				"expr": ".div-manga p:has(span.pre-title:contains(Status)) span[class^=text-]",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_authors": {
+				"type": "list",
+				"expr": ".div-manga p:has(span.pre-title:contains(Authors)) a[href*=\"/author/\"]",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_tags": {
+				"type": "list",
+				"expr": ".div-manga p:has(span.pre-title:contains(Genres)) a[href*=\"/genre/\"]",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_cover": {
+				"type": "url",
+				"expr": ".img-manga img[src]",
+				"attr": "src",
+				"headers": { "Referer": "{base_url}" }
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "manga",
+			"method": "GET",
+			"path_parameters": [{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "html",
+			"chapters": {
+				"type": "node",
+				"expr": "a.list-chapter[id^=chapter-]",
+				"for_each": {
+					"chapter_id": {
+						"attr": "id"
+					},
+					"chapter_url": {
+						"type": "url",
+						"attr": "href",
+						"headers": { "Referer": "{manga_url}" }
+					},
+					"chapter_title": {
+						"expr": "span",
+						"attr": "text",
+						"ops": [{ "type": "trim" }]
+					},
+					"chapter_number": {
+						"type": "double",
+						"attr": "id",
+						"ops": [{ "type": "regex_replace", "pattern": "^chapter-", "value": "" }]
+					},
+					"chapter_uploaded_at": {
+						"type": "date",
+						"expr": "p.text-right",
+						"attr": "text",
+						"format": "MMM d, yyyy",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "(?i)^.*(\\bago|just now)\\s*$", "value": "Dec 31, 2099" },
+							{ "type": "regex_replace", "pattern": "^.*?([A-Z][a-z][a-z] \\d\\d?, \\d\\d\\d\\d)\\s*$", "value": "$1" }
+						]
+					}
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "html_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"method": "GET"
+		},
+		"parser": {
+			"response_type": "html",
+			"pages": {
+				"type": "list",
+				"expr": "img.lozad[data-src]",
+				"attr": "data-src"
+			}
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"ongoing": "ongoing",
+			"completed": "completed"
+		}
+	}
+}

@@ -1,0 +1,228 @@
+{
+	"id": "mangaberri",
+	"name": "MangaBerri",
+	"version": 1,
+	"logo": "https://mangaberri.com/images/pwa-180.png",
+	"base_url": "https://mangaberri.com/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "html",
+			"results": {
+				"type": "node",
+				"expr": ".browse-cards article.manga-card:has(a[href*=/title/])",
+				"for_each": {
+					"manga_id": {
+						"expr": "a[href*=/title/]",
+						"attr": "href",
+						"ops": [
+							{ "type": "split", "pattern": "/" },
+							{ "type": "extract_last" }
+						]
+					},
+					"manga_title": {
+						"expr": "h3",
+						"attr": "text",
+						"ops": [{ "type": "trim" }]
+					},
+					"manga_cover": {
+						"type": "url",
+						"expr": "img[src]",
+						"attr": "src",
+						"headers": { "Referer": "{base_url}" },
+						"ops": [
+							{ "type": "trim" },
+							{ "type": "regex_replace", "pattern": "^/(?=[^/])", "value": "https://mangaberri.com/" }
+						]
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "browse",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort", "value": "popular" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"newest": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "browse",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort", "value": "latest" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "browse",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "q", "value": "{query}" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "title",
+			"path_parameters": [{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "html",
+			"manga_title": {
+				"expr": "section.detail h1",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_authors": {
+				"type": "list",
+				"expr": "section.detail h1 + p.muted",
+				"attr": "text",
+				"ops": [
+					{ "type": "trim" },
+					{ "type": "regex_replace", "pattern": "(?i)^author not listed$", "value": "" },
+					{ "type": "split", "pattern": "," },
+					{ "type": "trim" }
+				]
+			},
+			"manga_status": {
+				"expr": "section.detail .eyebrow, section.detail:not(:has(.eyebrow)) p[data-library-status]",
+				"attr": "text",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "·[\\s\\S]*$", "value": "" },
+					{ "type": "trim" }
+				]
+			},
+			"manga_tags": {
+				"type": "list",
+				"expr": "section.detail .tags a",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_description": {
+				"expr": "section.detail p.synopsis, section.detail:not(:has(p.synopsis)) p[data-library-status]",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_cover": {
+				"type": "url",
+				"expr": "section.detail img.detail-cover[src]",
+				"attr": "src",
+				"headers": { "Referer": "{base_url}" },
+				"ops": [
+					{ "type": "trim" },
+					{ "type": "regex_replace", "pattern": "^/(?=[^/])", "value": "https://mangaberri.com/" }
+				]
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "title",
+			"path_parameters": [{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "html",
+			"chapters": {
+				"type": "node",
+				"expr": "#chapters-panel a[data-chapter-name][href*=/read/], #volumes-panel a[data-chapter-name][href*=/read/]",
+				"for_each": {
+					"chapter_id": {
+						"attr": "href",
+						"ops": [
+							{ "type": "split", "pattern": "/" },
+							{ "type": "extract_last" }
+						]
+					},
+					"chapter_url": {
+						"type": "url",
+						"attr": "href",
+						"headers": { "Referer": "{manga_url}" },
+						"ops": [
+							{ "type": "trim" },
+							{ "type": "regex_replace", "pattern": "^/(?=[^/])", "value": "https://mangaberri.com/" }
+						]
+					},
+					"chapter_title": {
+						"expr": "strong",
+						"attr": "text",
+						"ops": [{ "type": "trim" }]
+					},
+					"chapter_number": {
+						"type": "double",
+						"attr": "data-chapter-name",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "^\\D*(\\d+(?:\\.\\d+)?)[\\s\\S]*$", "value": "$1" },
+							{ "type": "regex_replace", "pattern": "^\\D[\\s\\S]*$", "value": "" },
+							{ "type": "prepend_if_missing", "value": "0" }
+						]
+					},
+					"chapter_uploaded_at": {
+						"type": "date",
+						"expr": "strong + span",
+						"attr": "ownText",
+						"format": "MMM dd, yyyy",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "^[\\s\\S]*·", "value": "" },
+							{ "type": "trim" }
+						]
+					}
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "html_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "html",
+			"pages": {
+				"type": "node",
+				"expr": "img[data-page-image][src]",
+				"for_each": {
+					"page_url": {
+						"type": "url",
+						"attr": "src",
+						"headers": { "Referer": "{base_url}" },
+						"ops": [
+							{ "type": "trim" },
+							{ "type": "regex_replace", "pattern": "^/(?=[^/])", "value": "https://mangaberri.com/" }
+						]
+					}
+				}
+			}
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"ongoing": "ongoing",
+			"completed": "completed"
+		}
+	}
+}

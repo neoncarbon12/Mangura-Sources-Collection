@@ -1,0 +1,232 @@
+{
+	"id": "justmanga",
+	"name": "JustManga",
+	"version": 1,
+	"logo": "https://justmanga.cc/apple-touch-icon.png",
+	"base_url": "https://justmanga.cc/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "json",
+			"results": {
+				"type": "node",
+				"key": "results",
+				"for_each": {
+					"manga_id": {
+						"key": "id"
+					},
+					"manga_title": {
+						"key": "title"
+					},
+					"manga_cover": {
+						"type": "url",
+						"key": "cover"
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://core.justmanga.cc/api/browse",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort", "value": "trending" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			}
+		},
+		"newest": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://core.justmanga.cc/api/browse",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "status", "value": "ONGOING" },
+					{ "name": "sort", "value": "updated" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://core.justmanga.cc/api/search",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "q", "value": "{query}", "rules": ["forceNonEmpty"] },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": {
+					"Referer": "{base_url}"
+				}
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "manga",
+			"method": "GET",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }
+			],
+			"headers": {
+				"Referer": "{base_url}"
+			}
+		},
+		"parser": {
+			"response_type": "html",
+			"manga_title": {
+				"expr": ".jm-ssr article > h1",
+				"attr": "text",
+				"ops": [
+					{ "type": "trim" }
+				]
+			},
+			"manga_description": {
+				"expr": ".jm-ssr article > p:not(:has(a))",
+				"attr": "text",
+				"ops": [
+					{ "type": "trim" }
+				]
+			},
+			"manga_status": {
+				"expr": ".jm-ssr article > ul > li > a[href*=\"status=\"]",
+				"attr": "href",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "^.*status=", "value": "" },
+					{ "type": "lowercase" }
+				]
+			},
+			"manga_authors": {
+				"type": "list",
+				"expr": "meta[property=\"book:author\"]",
+				"attr": "content",
+				"ops": [
+					{ "type": "trim" }
+				]
+			},
+			"manga_tags": {
+				"type": "list",
+				"expr": ".jm-ssr article > p > a[href*=\"genre=\"]",
+				"attr": "text",
+				"ops": [
+					{ "type": "trim" }
+				]
+			},
+			"manga_cover": {
+				"type": "url",
+				"expr": ".jm-ssr article > img",
+				"attr": "src"
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "json_request",
+			"type": "absolute",
+			"base": "https://core.justmanga.cc/api/manga",
+			"method": "GET",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] },
+				{ "value": "chapters" }
+			],
+			"query_parameters": [
+				{ "name": "lang", "value": "en" }
+			],
+			"headers": {
+				"Referer": "{base_url}"
+			}
+		},
+		"parser": {
+			"response_type": "json",
+			"chapters": {
+				"type": "node",
+				"key": "chapters",
+				"for_each": {
+					"chapter_id": {
+						"key": "key"
+					},
+					"chapter_url": {
+						"type": "url",
+						"key": "key",
+						"ops": [
+							{ "type": "append", "value": "/pages?lang=en" },
+							{ "type": "prepend_if_missing", "value": "/chapters/" },
+							{ "type": "prepend_if_missing", "value": "{manga_id}" },
+							{ "type": "prepend_if_missing", "value": "https://core.justmanga.cc/api/manga/" }
+						]
+					},
+					"chapter_number": {
+						"type": "double",
+						"key": "key",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "^(?![0-9]+(\\.[0-9]+)?$).*$", "value": "0" }
+						]
+					},
+					"chapter_title": {
+						"key": "label",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "^(Chapter|Ch\\.)\\s*[0-9.]+\\s*(·\\s*)?", "value": "" },
+							{ "type": "trim" }
+						]
+					},
+					"chapter_uploaded_at": {
+						"type": "date",
+						"key": "releasedAt",
+						"format": "yyyy-MM-dd"
+					}
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "json_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"method": "GET",
+			"headers": {
+				"Referer": "{base_url}"
+			}
+		},
+		"parser": {
+			"response_type": "json",
+			"pages": {
+				"type": "node",
+				"key": "pages",
+				"for_each": {
+					"page_url": {
+						"type": "url",
+						"key": "proxy",
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "https://core.justmanga.cc/api/image?" }
+						]
+					}
+				}
+			}
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"ongoing": "ongoing",
+			"releasing": "ongoing",
+			"completed": "completed",
+			"finished": "completed",
+			"hiatus": "hiatus",
+			"cancelled": "cancelled",
+			"not_yet_released": "unknown"
+		}
+	}
+}

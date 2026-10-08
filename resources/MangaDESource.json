@@ -1,0 +1,235 @@
+{
+	"id": "mangade",
+	"name": "MangaDE",
+	"version": 1,
+	"logo": "https://mangade.io/assets/logonettruyen_black.png",
+	"base_url": "https://mangade.io/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "json",
+			"results": {
+				"type": "node",
+				"key": "data.list",
+				"for_each": {
+					"manga_id": { "key": "id" },
+					"manga_title": {
+						"key": "name",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "&#0*39;", "value": "'" },
+							{ "type": "replace", "pattern": "&#8216;", "value": "‘" },
+							{ "type": "replace", "pattern": "&#8217;", "value": "’" },
+							{ "type": "replace", "pattern": "&#8220;", "value": "“" },
+							{ "type": "replace", "pattern": "&#8221;", "value": "”" },
+							{ "type": "replace", "pattern": "&#8230;", "value": "…" },
+							{ "type": "regex_replace", "pattern": "&nbsp;|&#160;", "value": " " },
+							{ "type": "replace", "pattern": "&quot;", "value": "\"" },
+							{ "type": "replace", "pattern": "&amp;", "value": "&" },
+							{ "type": "trim" }
+						]
+					},
+					"manga_cover": {
+						"type": "url",
+						"key": "image",
+						"headers": { "Referer": "{base_url}" }
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://api.mangade.io/api/comics",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort", "value": "most-viewed" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] },
+					{ "name": "size", "value": "20" }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"newest": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://api.mangade.io/api/comics",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort", "value": "newest" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] },
+					{ "name": "size", "value": "20" }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://api.mangade.io/api/comics",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "name", "value": "{query}", "rules": ["forceNonEmpty"] },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] },
+					{ "name": "size", "value": "20" }
+				],
+				"headers": { "Referer": "{base_url}" }
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "json_request",
+			"type": "absolute",
+			"base": "https://api.mangade.io/api/comics",
+			"method": "GET",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] },
+				{ "value": "view" }
+			],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"manga_title": {
+				"key": "data.name",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "&#0*39;", "value": "'" },
+					{ "type": "replace", "pattern": "&#8216;", "value": "‘" },
+					{ "type": "replace", "pattern": "&#8217;", "value": "’" },
+					{ "type": "replace", "pattern": "&#8220;", "value": "“" },
+					{ "type": "replace", "pattern": "&#8221;", "value": "”" },
+					{ "type": "replace", "pattern": "&#8230;", "value": "…" },
+					{ "type": "regex_replace", "pattern": "&nbsp;|&#160;", "value": " " },
+					{ "type": "replace", "pattern": "&quot;", "value": "\"" },
+					{ "type": "replace", "pattern": "&amp;", "value": "&" },
+					{ "type": "trim" }
+				]
+			},
+			"manga_description": {
+				"key": "data.description",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "&#0*39;", "value": "'" },
+					{ "type": "replace", "pattern": "&#8216;", "value": "‘" },
+					{ "type": "replace", "pattern": "&#8217;", "value": "’" },
+					{ "type": "replace", "pattern": "&#8220;", "value": "“" },
+					{ "type": "replace", "pattern": "&#8221;", "value": "”" },
+					{ "type": "replace", "pattern": "&#8230;", "value": "…" },
+					{ "type": "regex_replace", "pattern": "&nbsp;|&#160;", "value": " " },
+					{ "type": "replace", "pattern": "&quot;", "value": "\"" },
+					{ "type": "replace", "pattern": "&amp;", "value": "&" },
+					{ "type": "trim" }
+				]
+			},
+			"manga_status": {
+				"key": "data.status",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_authors": {
+				"type": "list",
+				"key": "data.slug",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "[\\s\\S]*", "value": "" },
+					{ "type": "split", "pattern": "," }
+				]
+			},
+			"manga_tags": {
+				"type": "list",
+				"key": "data.genre_names",
+				"ops": [{ "type": "split", "pattern": "," }, { "type": "trim" }]
+			},
+			"manga_cover": {
+				"type": "url",
+				"key": "data.image",
+				"headers": { "Referer": "{base_url}" }
+			},
+			"manga_url": {
+				"type": "url",
+				"key": "data.slug",
+				"ops": [
+					{ "type": "append", "value": "-pid" },
+					{ "type": "append", "value": "{manga_id}" },
+					{ "type": "prepend_if_missing", "value": "https://mangade.io/comic/" }
+				]
+			},
+			"manga_last_updated": {
+				"type": "date",
+				"key": "data.news_chapters.[0].published_date",
+				"format": "yyyy-MM-dd HH:mm:ss"
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "json_request",
+			"type": "absolute",
+			"base": "https://api.mangade.io/api/comics",
+			"method": "GET",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] },
+				{ "value": "view" }
+			],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"chapters": {
+				"type": "node",
+				"key": "data.news_chapters",
+				"for_each": {
+					"chapter_id": { "key": "id" },
+					"chapter_url": {
+						"type": "url",
+						"key": "slug",
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "/" },
+							{ "type": "prepend_if_missing", "value": "{manga_id}" },
+							{ "type": "prepend_if_missing", "value": "https://api.mangade.io/api/chapters/" }
+						]
+					},
+					"chapter_number": { "type": "double", "key": "chapter_number" },
+					"chapter_title": {
+						"key": "name",
+						"ops": [{ "type": "trim" }]
+					},
+					"chapter_uploaded_at": { "type": "date", "key": "published_date", "format": "yyyy-MM-dd HH:mm:ss" }
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "json_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"method": "GET",
+			"path_parameters": [{ "value": "view" }],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"pages": {
+				"type": "node",
+				"key": "data.chapter_images",
+				"for_each": {
+					"page_url": {
+						"type": "url",
+						"key": "image",
+						"headers": { "Referer": "{base_url}" }
+					}
+				}
+			}
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"on-going": "ongoing",
+			"updating": "ongoing",
+			"complete": "completed",
+			"canceled": "cancelled",
+			"dropped": "cancelled"
+		}
+	}
+}

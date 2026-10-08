@@ -1,0 +1,238 @@
+{
+	"id": "dynastyreader",
+	"name": "Dynasty Reader",
+	"version": 1,
+	"logo": "https://dynasty-scans.com/assets/favicon-96599a954b862bfaaa71372cc403a6ab.png",
+	"base_url": "https://dynasty-scans.com/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "html",
+			"results": {
+				"type": "node",
+				"expr": "ul.cover-list li a.thumbnail[href^=/series/]",
+				"for_each": {
+					"manga_id": {
+						"attr": "href",
+						"ops": [
+							{ "type": "split", "pattern": "/" },
+							{ "type": "extract_last" }
+						]
+					},
+					"manga_title": {
+						"expr": ".caption b",
+						"attr": "text",
+						"ops": [{ "type": "trim" }]
+					},
+					"manga_cover": {
+						"type": "url",
+						"expr": "img[src]",
+						"attr": "src",
+						"headers": { "Referer": "{base_url}" },
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "https://dynasty-scans.com" }
+						]
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "series",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "view", "value": "cover" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "search",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "q", "value": "{query}" },
+					{ "name": "classes[]", "value": "Series" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			},
+			"parser": {
+				"response_type": "html",
+				"results": {
+					"type": "node",
+					"expr": "dl.chapter-list dd:has(a.name[href^=/series/])",
+					"for_each": {
+						"manga_id": {
+							"expr": "a.name",
+							"attr": "href",
+							"ops": [
+								{ "type": "split", "pattern": "/" },
+								{ "type": "extract_last" }
+							]
+						},
+						"manga_title": {
+							"expr": "a.name",
+							"attr": "text",
+							"ops": [{ "type": "trim" }]
+						},
+						"manga_cover": {
+							"type": "url",
+							"expr": "a.name",
+							"attr": "href",
+							"headers": { "Referer": "{base_url}" },
+							"ops": [
+								{ "type": "regex_replace", "pattern": "^[\\s\\S]*$", "value": "https://dynasty-scans.com/assets/cover_missing_medium.png" }
+							]
+						}
+					}
+				}
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "series",
+			"path_parameters": [{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "html",
+			"manga_title": {
+				"expr": "h2.tag-title b",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_authors": {
+				"type": "list",
+				"expr": "h2.tag-title a[href^=/authors/]",
+				"attr": "text"
+			},
+			"manga_status": {
+				"expr": "h2.tag-title",
+				"attr": "text",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "^[^—]*$", "value": "" },
+					{ "type": "regex_replace", "pattern": "^[\\s\\S]*—", "value": "" },
+					{ "type": "trim" }
+				]
+			},
+			"manga_tags": {
+				"type": "list",
+				"expr": ".tag-tags a.label",
+				"attr": "text"
+			},
+			"manga_description": {
+				"expr": "div.description, div.cover-chapters:not(:has(div.description)) > div.cover",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_cover": {
+				"type": "url",
+				"expr": "div.cover img[src], #content:not(:has(div.cover img[src])) a.brand img[src]",
+				"attr": "src",
+				"headers": { "Referer": "{base_url}" },
+				"ops": [
+					{ "type": "regex_replace", "pattern": "^/assets/brand-[\\s\\S]*$", "value": "/assets/cover_missing_medium.png" },
+					{ "type": "prepend_if_missing", "value": "https://dynasty-scans.com" }
+				]
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "series",
+			"path_parameters": [{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "html",
+			"chapters": {
+				"type": "node",
+				"expr": "dl.chapter-list dd:has(a.name[href^=/chapters/])",
+				"for_each": {
+					"chapter_id": {
+						"expr": "a.name",
+						"attr": "href",
+						"ops": [
+							{ "type": "split", "pattern": "/" },
+							{ "type": "extract_last" }
+						]
+					},
+					"chapter_url": {
+						"type": "url",
+						"expr": "a.name",
+						"attr": "href",
+						"headers": { "Referer": "{manga_url}" },
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "https://dynasty-scans.com" }
+						]
+					},
+					"chapter_title": {
+						"expr": "a.name",
+						"attr": "text",
+						"ops": [{ "type": "trim" }]
+					},
+					"chapter_number": {
+						"type": "double",
+						"expr": "a.name",
+						"attr": "text",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "(?i)^(?:[\\s\\S]*?\\b(?:chapter|ch\\.?)\\s*(\\d+(?:\\.\\d+)?)[\\s\\S]*|[\\s\\S]*)$", "value": "0$1" }
+						]
+					},
+					"chapter_uploaded_at": {
+						"type": "date",
+						"expr": "small:contains(released)",
+						"attr": "text",
+						"format": "MMM d yyyy",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "^\\s*released\\s+([A-Za-z]+)\\s+(\\d+)\\s+'(\\d\\d)\\s*$", "value": "$1 $2 20$3" }
+						]
+					}
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "json_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"query_parameters": [{ "name": "format", "value": "json" }],
+			"headers": { "Referer": "{chapter_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"pages": {
+				"type": "node",
+				"key": "pages",
+				"for_each": {
+					"page_url": {
+						"type": "url",
+						"key": "url",
+						"headers": { "Referer": "{base_url}" },
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "https://dynasty-scans.com" }
+						]
+					}
+				}
+			}
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"on hiatus": "hiatus",
+			"abandoned": "cancelled"
+		}
+	}
+}

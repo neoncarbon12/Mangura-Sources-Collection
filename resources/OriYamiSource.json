@@ -1,0 +1,170 @@
+{
+	"id": "oriyami",
+	"name": "OriYami",
+	"version": 1,
+	"logo": "https://oriyami.com/apple-touch-icon.png",
+	"base_url": "https://oriyami.com/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "json",
+			"results": {
+				"type": "node",
+				"key": "results",
+				"for_each": {
+					"manga_id": { "key": "slug" },
+					"manga_title": { "key": "title" },
+					"manga_cover": {
+						"type": "url",
+						"key": "cover_url",
+						"headers": { "Referer": "{base_url}" }
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://api.oriyami.com/api/mangas/popular-list/",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "page_size", "value": "18" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"newest": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://api.oriyami.com/api/mangas/browse/",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort", "value": "latest_updates" },
+					{ "name": "page_size", "value": "18" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "json_request",
+				"type": "absolute",
+				"base": "https://api.oriyami.com/api/mangas/search/",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "q", "value": "{query}", "rules": ["forceNonEmpty"] },
+					{ "name": "q", "value": "{page}", "rules": ["multiplyBy(987654321)", "omitWhenZero"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "json_request",
+			"type": "absolute",
+			"base": "https://api.oriyami.com/api/mangas",
+			"method": "GET",
+			"path_parameters": [{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"manga_title": { "key": "title" },
+			"manga_description": {
+				"key": "synopsis",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_status": { "key": "status" },
+			"manga_authors": { "type": "list", "key": "mangakas" },
+			"manga_tags": { "type": "list", "key": "genres" },
+			"manga_cover": {
+				"type": "url",
+				"key": "cover_url",
+				"headers": { "Referer": "{base_url}" }
+			},
+			"manga_url": {
+				"type": "url",
+				"key": "slug",
+				"ops": [{ "type": "prepend_if_missing", "value": "https://oriyami.com/manga/" }]
+			},
+			"manga_last_updated": {
+				"type": "date",
+				"key": "last_published_at",
+				"format": "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
+				"ops": [{ "type": "regex_replace", "pattern": "\\.\\d+", "value": "" }]
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "json_request",
+			"type": "absolute",
+			"base": "https://api.oriyami.com/api/mangas",
+			"method": "GET",
+			"path_parameters": [{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"chapters": {
+				"type": "node",
+				"key": "scans",
+				"for_each": {
+					"chapter_id": { "key": "id" },
+					"chapter_url": {
+						"type": "url",
+						"key": "number",
+						"ops": [
+							{ "type": "append", "value": "/" },
+							{ "type": "prepend_if_missing", "value": "chapters/" },
+							{ "type": "prepend_if_missing", "value": "/" },
+							{ "type": "prepend_if_missing", "value": "{manga_id}" },
+							{ "type": "prepend_if_missing", "value": "https://api.oriyami.com/api/mangas/" }
+						]
+					},
+					"chapter_number": { "type": "double", "key": "number" },
+					"chapter_uploaded_at": {
+						"type": "date",
+						"key": "created_at",
+						"format": "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
+						"ops": [{ "type": "regex_replace", "pattern": "\\.\\d+", "value": "" }]
+					}
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "json_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"method": "GET",
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"pages": {
+				"type": "node",
+				"key": "pages",
+				"for_each": {
+					"page_url": {
+						"type": "url",
+						"key": "image_url",
+						"headers": { "Referer": "{base_url}" }
+					}
+				}
+			}
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"ongoing": "ongoing",
+			"completed": "completed"
+		}
+	}
+}

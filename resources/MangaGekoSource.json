@@ -1,0 +1,276 @@
+{
+	"id": "mangageko",
+	"name": "MangaGeko",
+	"version": 1,
+	"logo": "https://www.mgeko.cc/static/img/logo_200x200.png",
+	"base_url": "https://www.mgeko.cc/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "html",
+			"results": {
+				"type": "node",
+				"expr": "article[class*=comic-card]:has(a[href*=/manga/])",
+				"for_each": {
+					"manga_id": {
+						"expr": "a[href*=/manga/]",
+						"attr": "href",
+						"ops": [
+							{ "type": "regex_replace", "pattern": "[\\\\\"]", "value": "" },
+							{ "type": "split", "pattern": "/" },
+							{ "type": "extract_last" }
+						]
+					},
+					"manga_title": {
+						"expr": "h3 a",
+						"attr": "text",
+						"ops": [
+							{ "type": "replace", "pattern": "\\n", "value": " " },
+							{ "type": "replace", "pattern": "\\u2018", "value": "‘" },
+							{ "type": "replace", "pattern": "\\u2019", "value": "’" },
+							{ "type": "replace", "pattern": "\\u201c", "value": "“" },
+							{ "type": "replace", "pattern": "\\u201d", "value": "”" },
+							{ "type": "replace", "pattern": "\\u2013", "value": "–" },
+							{ "type": "replace", "pattern": "\\u2014", "value": "—" },
+							{ "type": "replace", "pattern": "\\u2026", "value": "…" },
+							{ "type": "replace", "pattern": "\\uff1f", "value": "？" },
+							{ "type": "replace", "pattern": "\\uff01", "value": "！" },
+							{ "type": "regex_replace", "pattern": "\\s+", "value": " " },
+							{ "type": "trim" }
+						]
+					},
+					"manga_cover": {
+						"type": "url",
+						"expr": "img[src*=manga_covers]",
+						"attr": "src",
+						"headers": { "Referer": "{base_url}" },
+						"ops": [
+							{ "type": "regex_replace", "pattern": "[\\\\\"]", "value": "" },
+							{ "type": "trim" },
+							{ "type": "regex_replace", "pattern": "^/(?=[^/])", "value": "https://www.mgeko.cc/" }
+						]
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "browse-comics/data",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort", "value": "popular_weekly" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "https://www.mgeko.cc/browse-comics/" }
+			}
+		},
+		"newest": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "browse-comics/data",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "sort", "value": "latest" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "https://www.mgeko.cc/browse-comics/" }
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "html_request",
+				"type": "relative",
+				"base": "search",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "search", "value": "{query}" },
+					{ "name": "search", "value": "{page}", "rules": ["multiplyBy(987654321)", "omitWhenZero"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			},
+			"parser": {
+				"response_type": "html",
+				"results": {
+					"type": "node",
+					"expr": "ul.novel-list li.novel-item:has(a[href^=/manga/])",
+					"for_each": {
+						"manga_id": {
+							"expr": "a[href^=/manga/]",
+							"attr": "href",
+							"ops": [
+								{ "type": "split", "pattern": "/" },
+								{ "type": "extract_last" }
+							]
+						},
+						"manga_title": {
+							"expr": "h4.novel-title",
+							"attr": "text",
+							"ops": [{ "type": "trim" }]
+						},
+						"manga_cover": {
+							"type": "url",
+							"expr": "img[data-src]",
+							"attr": "data-src",
+							"headers": { "Referer": "{base_url}" },
+							"ops": [
+								{ "type": "trim" },
+								{ "type": "regex_replace", "pattern": "^/(?=[^/])", "value": "https://www.mgeko.cc/" }
+							]
+						}
+					}
+				}
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "manga",
+			"path_parameters": [{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "html",
+			"manga_title": {
+				"expr": "h1.novel-title",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_authors": {
+				"type": "list",
+				"expr": ".author [itemprop=author]",
+				"attr": "text",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "(?i)^\\s*updating\\s*$", "value": "" },
+					{ "type": "split", "pattern": "," },
+					{ "type": "trim" }
+				]
+			},
+			"manga_status": {
+				"expr": ".header-stats span:has(small:contains(Status)) strong",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_tags": {
+				"type": "list",
+				"expr": ".categories a",
+				"attr": "text",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_description": {
+				"expr": "p.description",
+				"attr": "text",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "^[\\s\\S]*?fastest updating comic site\\.\\s*(?:The Summary is\\s*)?", "value": "" },
+					{ "type": "trim" }
+				]
+			},
+			"manga_cover": {
+				"type": "url",
+				"expr": "figure.cover img[data-src]",
+				"attr": "data-src",
+				"headers": { "Referer": "{base_url}" },
+				"ops": [
+					{ "type": "trim" },
+					{ "type": "regex_replace", "pattern": "^/(?=[^/])", "value": "https://www.mgeko.cc/" }
+				]
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "html_request",
+			"type": "relative",
+			"base": "manga",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] },
+				{ "value": "all-chapters" }
+			],
+			"headers": { "Referer": "{manga_url}" }
+		},
+		"parser": {
+			"response_type": "html",
+			"chapters": {
+				"type": "node",
+				"expr": "ul.chapter-list li:has(a[href^=/reader/])",
+				"for_each": {
+					"chapter_id": {
+						"expr": "a[href^=/reader/]",
+						"attr": "href",
+						"ops": [
+							{ "type": "split", "pattern": "/" },
+							{ "type": "extract_last" }
+						]
+					},
+					"chapter_url": {
+						"type": "url",
+						"expr": "a[href^=/reader/]",
+						"attr": "href",
+						"headers": { "Referer": "{manga_url}" },
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "https://www.mgeko.cc" }
+						]
+					},
+					"chapter_number": {
+						"type": "double",
+						"expr": "strong.chapter-title",
+						"attr": "text",
+						"ops": [
+							{ "type": "trim" },
+							{ "type": "regex_replace", "pattern": "^\\D*", "value": "" },
+							{ "type": "regex_replace", "pattern": "^(\\d+)(?:[-.](\\d+)(?=-eng|$))?[\\s\\S]*$", "value": "$1.$2" },
+							{ "type": "regex_replace", "pattern": "\\.$", "value": "" },
+							{ "type": "prepend_if_missing", "value": "0" }
+						]
+					},
+					"chapter_uploaded_at": {
+						"type": "date",
+						"expr": "time.chapter-update[datetime]",
+						"attr": "datetime",
+						"format": "MMM d yyyy",
+						"ops": [
+							{ "type": "trim" },
+							{ "type": "regex_replace", "pattern": "^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[A-Za-z]*\\.? (\\d+), (\\d\\d\\d\\d)[\\s\\S]*$", "value": "$1 $2 $3" }
+						]
+					}
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "html_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "html",
+			"pages": {
+				"type": "node",
+				"expr": "img[id^=image-][src]",
+				"for_each": {
+					"page_url": {
+						"type": "url",
+						"attr": "src",
+						"headers": { "Referer": "{base_url}" },
+						"ops": [
+							{ "type": "trim" },
+							{ "type": "regex_replace", "pattern": "^/(?=[^/])", "value": "https://www.mgeko.cc/" }
+						]
+					}
+				}
+			}
+		}
+	},
+	"mapping": {
+		"manga_status": {
+			"ongoing": "ongoing",
+			"completed": "completed"
+		}
+	}
+}

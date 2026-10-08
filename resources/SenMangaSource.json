@@ -1,0 +1,173 @@
+{
+	"id": "senmanga",
+	"name": "SenManga",
+	"version": 1,
+	"logo": "https://raw.senmanga.com/favicon.ico",
+	"base_url": "https://raw.senmanga.com/",
+	"catalog": {
+		"default_parser": {
+			"response_type": "json",
+			"results": {
+				"type": "node",
+				"key": "series",
+				"for_each": {
+					"manga_id": { "key": "slug" },
+					"manga_title": {
+						"key": "title",
+						"ops": [{ "type": "trim" }]
+					},
+					"manga_cover": {
+						"type": "url",
+						"key": "cover",
+						"headers": { "Referer": "{base_url}" }
+					}
+				}
+			}
+		},
+		"trending": {
+			"request": {
+				"request_type": "json_request",
+				"type": "relative",
+				"base": "api/directory",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "order", "value": "Popular" },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"newest": {
+			"request": {
+				"request_type": "json_request",
+				"type": "relative",
+				"base": "api/home",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			}
+		},
+		"search": {
+			"request": {
+				"request_type": "json_request",
+				"type": "relative",
+				"base": "api/search",
+				"method": "GET",
+				"query_parameters": [
+					{ "name": "q", "value": "{query}", "rules": ["forceNonEmpty"] },
+					{ "name": "page", "value": "{page}", "rules": ["startsAtOne"] }
+				],
+				"headers": { "Referer": "{base_url}" }
+			},
+			"filters": []
+		}
+	},
+	"details": {
+		"request": {
+			"request_type": "json_request",
+			"type": "relative",
+			"base": "api/manga",
+			"method": "GET",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }
+			],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"manga_title": {
+				"key": "title",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_description": {
+				"key": "description",
+				"ops": [{ "type": "trim" }]
+			},
+			"manga_status": {
+				"key": "slug",
+				"ops": [{ "type": "regex_replace", "pattern": "^[\\s\\S]*$", "value": "unknown" }]
+			},
+			"manga_authors": {
+				"type": "list",
+				"key": "slug",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "^[\\s\\S]*$", "value": "" },
+					{ "type": "split", "pattern": "," }
+				]
+			},
+			"manga_tags": {
+				"type": "list",
+				"key": "genre",
+				"ops": [{ "type": "split", "pattern": "," }, { "type": "trim" }]
+			},
+			"manga_cover": {
+				"type": "url",
+				"key": "cover",
+				"headers": { "Referer": "{base_url}" }
+			},
+			"manga_url": {
+				"type": "url",
+				"key": "slug",
+				"ops": [
+					{ "type": "regex_replace", "pattern": "^[\\s\\S]*$", "value": "" },
+					{ "type": "append", "value": "{manga_id}" },
+					{ "type": "prepend_if_missing", "value": "{base_url}" }
+				]
+			}
+		}
+	},
+	"chapters": {
+		"request": {
+			"request_type": "json_request",
+			"type": "relative",
+			"base": "api/manga",
+			"method": "GET",
+			"path_parameters": [
+				{ "value": "{manga_id}", "rules": ["forceNonEmpty"] }
+			],
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"chapters": {
+				"type": "node",
+				"key": "chapterList",
+				"for_each": {
+					"chapter_id": { "key": "url" },
+					"chapter_url": {
+						"type": "url",
+						"key": "url",
+						"ops": [
+							{ "type": "prepend_if_missing", "value": "/" },
+							{ "type": "prepend_if_missing", "value": "{manga_id}" },
+							{ "type": "prepend_if_missing", "value": "api/read/" },
+							{ "type": "prepend_if_missing", "value": "{base_url}" }
+						]
+					},
+					"chapter_number": { "type": "double", "key": "number" },
+					"chapter_title": {
+						"key": "title",
+						"ops": [{ "type": "trim" }]
+					},
+					"chapter_uploaded_at": { "type": "date", "key": "datetime", "format": "yyyy-MM-dd'T'HH:mm:ssXXXXX" }
+				}
+			}
+		}
+	},
+	"pages": {
+		"request": {
+			"request_type": "json_request",
+			"type": "placeholder",
+			"base": "chapter_url",
+			"method": "GET",
+			"headers": { "Referer": "{base_url}" }
+		},
+		"parser": {
+			"response_type": "json",
+			"pages": { "type": "list", "key": "pages" }
+		}
+	},
+	"mapping": { "manga_status": {} }
+}
