@@ -1,8 +1,23 @@
 {
   "name": "Mangura Community Sources",
   "sources": [
-    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/MangaFireSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/AtsumaruSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/ChikariSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/DynastyReaderSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/JustMangaSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/MangaballSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/MangaBerriSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/MangaDESource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/MangaFreakSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/MangaGekoSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/MangaKSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/ManganatoSource.json",
     "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/ManganeloSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/ManhuaBuddySource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/OriYamiSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/SenMangaSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/SwarmSource.json",
+    "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/VyMangaSource.json",
     "https://neoncarbon12.github.io/Mangura-Sources-Collection/resources/WeebCentralSource.json"
   ]
 }

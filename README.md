@@ -21,7 +21,7 @@ You can also import it from the **Search** screen using **+ → From URL**.
 
 ## What gets imported
 
-The collection currently contains **3 community sources**. Provider details appear inside Mangura after import rather than being promoted on the collection website.
+The collection currently contains **18 community sources**. Provider details appear inside Mangura after import rather than being promoted on the collection website.
 
 After importing, enabled sources appear on the Search screen. You can enable, disable, update, or remove them from **Settings → Sources**.
 
